@@ -44,7 +44,7 @@ const Navbar = () => {
               <ul className="flex items-center text-sm font-semibold space-x-4 justify-center ring-1 ring-inset dark:bg-[#242424] dark:ring-[#2a2a2a] ring-[#e8e8e8] bg-[#f9f9f9] transition-all py-2 px-4 rounded-xl">
                 {user ? (
                   <>
-                    <li className="uppercase cursor-pointer">home</li>
+                    {/* <li className="uppercase cursor-pointer">home</li> */}
                     <li
                       className="uppercase text-base text-red-500 font-semibold cursor-pointer material-symbols-rounded"
                       onClick={handleLogout}
