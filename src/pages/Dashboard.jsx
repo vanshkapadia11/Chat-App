@@ -4,7 +4,12 @@ import { useState } from "react";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import { useNavigate } from "react-router-dom";
-import { getUserData } from "../utils/firestoreFunctions";
+import {
+  addUserData,
+  getUserData,
+  getUserDataByUid,
+} from "../utils/firestoreFunctions";
+import { arrayUnion } from "firebase/firestore";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -35,6 +40,10 @@ const Dashboard = () => {
     if (userExists) {
       console.log("✅ User ID is valid:", addContact);
       setShowPopup(true);
+      await addUserData(addContact, {
+        requests: arrayUnion(user.uid),
+      });
+      console.log(await getUserDataByUid(addContact));
       setTimeout(() => {
         setShowPopup(false);
       }, 10000);
