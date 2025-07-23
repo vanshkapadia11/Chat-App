@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import SeeRequests from "./pages/SeeRequests";
+import Chats from "./pages/Chats";
 
 const App = () => {
   function PrivateRoute({ children }) {
@@ -27,6 +28,7 @@ const App = () => {
         />
         <Route path="/" element={<Navigate to="/dashboard" />} />
         <Route path="/Requests/:UserID" element={<SeeRequests />} />
+        <Route path="/Chat/:ChatID" element={<Chats />} />
       </Routes>
     </>
   );

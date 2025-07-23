@@ -1,15 +1,21 @@
 // utils/firestoreFunctions.js
 import { db } from "../firebase";
 import {
-  collection,
-  setDoc,
-  getDocs,
   doc,
+  setDoc,
   updateDoc,
-  deleteDoc,
   getDoc,
+  collection,
+  addDoc,
+  serverTimestamp,
+  getDocs,
+  query,
+  orderBy,
+  onSnapshot,
 } from "firebase/firestore";
+import { arrayUnion, arrayRemove } from "firebase/firestore";
 
+import { v4 as uuidv4 } from "uuid"; // For unique message IDs
 // Create
 export const addUserData = async (uid, data) => {
   try {
@@ -69,4 +75,69 @@ export const createChatDocument = async (chatId, users) => {
   } catch (error) {
     console.error("❌ Error creating chat document:", error.message);
   }
+};
+
+// ✅ Add chatId to user's personal "chats" array
+export const createOrJoinChat = async (chatId, userId, friendId) => {
+  // References to each user's chat doc
+  const userChatRef = doc(db, "todoUsers", userId, "chats", chatId);
+  const friendChatRef = doc(db, "todoUsers", friendId, "chats", chatId);
+
+  // Create chat metadata for both users
+  await setDoc(userChatRef, {
+    users: [userId, friendId],
+    createdAt: serverTimestamp(),
+  });
+
+  await setDoc(friendChatRef, {
+    users: [userId, friendId],
+    createdAt: serverTimestamp(),
+  });
+};
+// Send message to subcollection
+export const sendMessageToChatDoc = async (chatId, senderId, text) => {
+  const senderChatRef = doc(db, "todoUsers", senderId, "chats", chatId);
+  const senderSnap = await getDoc(senderChatRef);
+
+  if (!senderSnap.exists()) {
+    console.error(`Chat ${chatId} not found for user ${senderId}`);
+    return;
+  }
+
+  const users = senderSnap.data().users;
+  console.log("Sending message to users:", users);
+
+  for (const uid of users) {
+    const messagesRef = collection(
+      db,
+      "todoUsers",
+      uid,
+      "chats",
+      chatId,
+      "messages"
+    );
+    await addDoc(messagesRef, {
+      text,
+      senderId,
+      createdAt: serverTimestamp(),
+    });
+  }
+};
+
+// Listen for messages in real-time
+export const listenToMessages = (chatId, userId, callback) => {
+  const messagesRef = collection(
+    db,
+    "todoUsers",
+    userId,
+    "chats",
+    chatId,
+    "messages"
+  );
+  const q = query(messagesRef, orderBy("createdAt", "asc"));
+
+  return onSnapshot(q, (snapshot) => {
+    const msgs = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    callback(msgs);
+  });
 };
