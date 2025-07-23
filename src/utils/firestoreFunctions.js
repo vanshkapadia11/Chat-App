@@ -57,3 +57,16 @@ export const getUserDataByUid = async (uid) => {
     return null;
   }
 };
+
+// ✅ Create a new chat document with given users
+export const createChatDocument = async (chatId, users) => {
+  try {
+    const chatRef = doc(db, "chats", chatId);
+    await setDoc(chatRef, {
+      users: users, // [uid1, uid2]
+    });
+    console.log("✅ Chat document created:", chatId);
+  } catch (error) {
+    console.error("❌ Error creating chat document:", error.message);
+  }
+};

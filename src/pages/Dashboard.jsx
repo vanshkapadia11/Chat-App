@@ -1,5 +1,5 @@
 import { useAuth } from "../context/AuthContext";
-import { useEffect } from "react";
+import { use, useEffect } from "react";
 import { useState } from "react";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
@@ -10,6 +10,7 @@ import {
   getUserDataByUid,
 } from "../utils/firestoreFunctions";
 import { arrayUnion } from "firebase/firestore";
+import Contacts from "./Contacts";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -27,7 +28,9 @@ const Dashboard = () => {
       console.error("Failed to copy: ", err);
     }
   };
-
+  useEffect(() => {
+    console.log(user);
+  }, []);
   const AddContact = async () => {
     console.log(addContact);
     if (addContact === "") return;
@@ -90,7 +93,7 @@ const Dashboard = () => {
               <span className="material-symbols-rounded text-green-600">
                 crown
               </span>
-              Welcome, {user.displayName}
+              Welcome, {user.displayName}!
             </h2>
             <h2 className="flex items-center uppercase text-sm font-semibold gap-2 flex-wrap mb-4">
               <span className="material-symbols-rounded text-green-600">
@@ -125,6 +128,9 @@ const Dashboard = () => {
               <p className="text-sm font-semibold uppercase mb-2">
                 see all your contact's in one place!!
               </p>
+              <div className="flex flex-col w-full gap-3 uppercase">
+                <Contacts />
+              </div>
             </div>
             <div className="w-full my-10">
               <h2 className="text-xl font-semibold uppercase mt-10 mb-2">

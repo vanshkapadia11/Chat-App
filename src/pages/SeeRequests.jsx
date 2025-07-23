@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { addUserData, getUserDataByUid } from "../utils/firestoreFunctions";
+import {
+  addUserData,
+  getUserDataByUid,
+  createChatDocument,
+} from "../utils/firestoreFunctions";
 import { arrayUnion } from "firebase/firestore";
 import { arrayRemove } from "firebase/firestore";
 
@@ -34,11 +38,30 @@ const SeeRequests = () => {
     fetchUser();
   }, [user.uid]);
 
-  const addToContact = async (idx) => {
-    await addUserData(user.uid, {
-      friends: arrayUnion(idx),
-      requests: arrayRemove(idx), // 👈 remove from requests
+  const addToContact = async (friendUid) => {
+    const currentUid = user.uid;
+
+    const chatId = [currentUid, friendUid].sort().join("_");
+
+    // Step 1: Create chat doc
+    await createChatDocument(chatId, [currentUid, friendUid]);
+
+    // Step 2: Update CURRENT user (receiver)
+    await addUserData(currentUid, {
+      friends: arrayUnion(friendUid),
+      requests: arrayRemove(friendUid),
+      chats: arrayUnion(chatId),
     });
+
+    // Step 3: Update FRIEND user (sender)
+    await addUserData(friendUid, {
+      friends: arrayUnion(currentUid), // ✅ MUST be here
+      chats: arrayUnion(chatId),
+    });
+
+    console.log(
+      "✅ Both users now have each other as friends and chat linked."
+    );
     navigate("/dashboard");
   };
 
@@ -87,7 +110,9 @@ const SeeRequests = () => {
               </div>
             ))
           ) : (
-            <p className="text-gray-400">No requests yet.</p>
+            <p className="text-gray-400 text-sm font-semibold uppercase">
+              No requests yet.
+            </p>
           )}
         </div>
       </div>
